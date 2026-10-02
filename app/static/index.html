@@ -1,0 +1,187 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenScout – Personal Open Source Event Agent</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="brand">
+        <div class="brand-icon">🔭</div>
+        <div>
+          <h1>OpenScout</h1>
+          <p class="tagline">Your Personal Open Source Event Agent</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <div id="ai-status-badge" class="badge badge-warning">
+          <span class="status-dot"></span> Checking AI Model...
+        </div>
+        <button id="view-notifications-btn" class="btn btn-secondary">
+          🔔 Notifications <span id="notif-count-badge" class="pill-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <!-- Top Row: Profile Preferences & Feedback Stats -->
+    <div class="dashboard-grid">
+      <!-- User Profile Card -->
+      <section class="card profile-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">👤</span>
+            <div>
+              <h2>User Profile Preferences</h2>
+              <p class="card-subtitle">Tuned specifically for: <strong id="profile-name-display">Friend</strong></p>
+            </div>
+          </div>
+          <button id="edit-profile-btn" class="btn btn-sm btn-outline">Edit Preferences</button>
+        </div>
+
+        <div class="profile-section">
+          <h3>Your Interests</h3>
+          <div id="interests-chips" class="chip-container">
+            <!-- Dynamic Chips -->
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3>Preferred Locations</h3>
+          <div id="locations-chips" class="chip-container">
+            <!-- Dynamic Chips -->
+          </div>
+        </div>
+
+        <div class="profile-section threshold-section">
+          <div class="threshold-header">
+            <span>AI Notification Match Threshold:</span>
+            <strong id="threshold-val">80%</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feedback & Stats Card -->
+      <section class="card stats-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-icon">📊</span>
+            <div>
+              <h2>Your Feedback</h2>
+              <p class="card-subtitle">Stored in SQLite for future personalization</p>
+            </div>
+          </div>
+        </div>
+        <div class="stats-counter-grid">
+          <div class="stat-box interested">
+            <span class="stat-number" id="interested-count">0</span>
+            <span class="stat-label">Interested ⭐</span>
+          </div>
+          <div class="stat-box not-interested">
+            <span class="stat-number" id="not-interested-count">0</span>
+            <span class="stat-label">Not Interested ✕</span>
+          </div>
+        </div>
+
+        <div class="hacktoberfest-callout">
+          <p>🎃 <strong>Hacktoberfest 2026:</strong> Powered entirely by open-weight AI (Gemma/Ollama). No closed APIs.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Actions & Toolbar -->
+    <section class="action-bar card">
+      <div class="action-controls">
+        <button id="sync-fetch-btn" class="btn btn-secondary">
+          🔄 Fetch Upcoming Events
+        </button>
+        <button id="run-ai-btn" class="btn btn-primary">
+          ✨ Run Open-Weight AI Analysis
+        </button>
+      </div>
+
+      <div class="filter-controls">
+        <label for="filter-select">Filter by Status:</label>
+        <select id="filter-select" class="select-input">
+          <option value="all">All Events</option>
+          <option value="unreviewed">Unreviewed</option>
+          <option value="interested">Interested ⭐</option>
+          <option value="not_interested">Not Interested ✕</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Events Feed -->
+    <section class="events-section">
+      <div class="section-header">
+        <h2>Recommended Events (Ranked by AI Relevance)</h2>
+        <span id="events-count" class="text-muted">Showing 0 events</span>
+      </div>
+
+      <div id="events-feed" class="events-feed">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Edit Profile Modal -->
+  <div id="profile-modal" class="modal-overlay hidden">
+    <div class="modal card">
+      <div class="modal-header">
+        <h3>Edit Personal Preferences</h3>
+        <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+      </div>
+      <form id="profile-form">
+        <div class="form-group">
+          <label for="profile-name">Name</label>
+          <input type="text" id="profile-name" required class="input-text">
+        </div>
+        <div class="form-group">
+          <label for="profile-interests">Interests (comma separated)</label>
+          <input type="text" id="profile-interests" required class="input-text" placeholder="e.g. Open Source, Hackathons, AI/ML, DevOps, Kubernetes">
+        </div>
+        <div class="form-group">
+          <label for="profile-locations">Locations (comma separated)</label>
+          <input type="text" id="profile-locations" required class="input-text" placeholder="e.g. Pune, Mumbai, Online">
+        </div>
+        <div class="form-group">
+          <label for="profile-threshold">Notification Threshold (0.50 - 0.95): <span id="threshold-preview">0.80</span></label>
+          <input type="range" id="profile-threshold" min="0.5" max="0.95" step="0.05" value="0.80" class="input-range">
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="cancel-profile-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Preferences</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notification Drawer Modal -->
+  <div id="notifications-modal" class="modal-overlay hidden">
+    <div class="modal card notif-modal">
+      <div class="modal-header">
+        <h3>🔔 High Relevance Notification Dispatch Log</h3>
+        <button id="close-notif-btn" class="modal-close-btn">&times;</button>
+      </div>
+      <p class="text-muted">Only events scored &ge; user threshold by the open-weight AI model trigger notifications.</p>
+      <div id="notifications-list" class="notifications-list">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <p>OpenScout • Built for Hacktoberfest 2026 DEV Challenge "Build for a Friend" • Powered by Open-Weight AI</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

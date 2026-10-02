@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  openscout:
+    build: .
+    container_name: openscout-web
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=OpenScout
+      - DEMO_MODE=true
+      - DATABASE_URL=sqlite:///./data/openscout.db
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - MODEL_NAME=gemma2:2b
+      - NOTIFICATION_THRESHOLD=0.80
+      - NOTIFICATION_CHANNEL=log
+    volumes:
+      - ./data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
